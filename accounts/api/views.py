@@ -1,11 +1,13 @@
 from rest_framework import generics
 from .serializer import (
     LoginSerializer, RegisterSerializer, ActivationCheckSerializer, ResetPasswordSerializer,
-    ResetPasswordCheckSerializer, ResetPasswordCompleteSerializer
+    ResetPasswordCheckSerializer, ResetPasswordCompleteSerializer, PasswordChangeSerializer,
+    UpdateProfileSerializer,
 )
 from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import smart_str
+from rest_framework.permissions import IsAuthenticated
 
 User = get_user_model()
 
@@ -58,3 +60,19 @@ class ResetPasswordCompleteView(generics.UpdateAPIView):
         return User.objects.get(id=int(id_))
 
 
+class ChangePasswordView(generics.UpdateAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = PasswordChangeSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
+
+
+class UpdateProfileView(generics.UpdateAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UpdateProfileSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user

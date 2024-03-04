@@ -1,3 +1,4 @@
+import pathlib
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -26,12 +27,12 @@ class LoginSerializer(serializers.ModelSerializer):
         try:
             user = User.objects.get(email=attrs.get("email"))
         except:
-            raise serializers.ValidationError({"error": "Email yanlisdir."})
+            raise serializers.ValidationError({"error": "No account with this email."})
 
         if not user.check_password(password):
-            raise serializers.ValidationError({"error": "Sifre yanlisdir."})
+            raise serializers.ValidationError({"error": "Password is wrong."})
         if not user.is_active:
-            raise serializers.ValidationError({"error": "Bu hesab aktif deyil."})
+            raise serializers.ValidationError({"error": "This account is not activate."})
         return super().validate(attrs)
 
     def get_user(self):
@@ -73,28 +74,35 @@ class RegisterSerializer(serializers.ModelSerializer):
             "last_name": {"required": True},
         }
 
+    def get_uuid(self, obj):
+        return urlsafe_base64_encode(smart_bytes(obj.id))
+
     def validate(self, attrs):
         email = attrs.get("email")
         username = attrs.get("username")
         password = attrs.get("password")
         password_confirm = attrs.get("password_confirm")
 
+        # Check if email, username, and mobile already exist
         if User.objects.filter(email=email).exists():
-            raise serializers.ValidationError({"error": "Bu mail artiq qeydiyyatda var."})
-        if User.objects.filter(username=username).exists():
-            raise serializers.ValidationError({"error": "Bu username artiq movcuddur"})
-        if len(password) < 8:
-            raise serializers.ValidationError({"error": "Sifrenin uzunlugu 8 den kicik ola bilmez."})
-        if not password == password_confirm:
-            raise serializers.ValidationError({"error": "Sifreler arasinda ziddiyet var."})
-        if not any(_.isdigit() for _ in password):
-            raise serializers.ValidationError({"error": "Sifrede en az bir reqem olmalidir"})
-        if not any(_.isupper() for _ in password):
-            raise serializers.ValidationError({"error": "Sifrede en az bir boyuk herif olmalidir."})
-        return super().validate(attrs)
+            raise serializers.ValidationError({"error": "This email already exists."})
+        if User.objects.filter(username__iexact=username).exists():
+            raise serializers.ValidationError({"error": "This username already exists."})
 
-    def get_uuid(self, obj):
-        return urlsafe_base64_encode(smart_bytes(obj.id))
+        # Check username length
+        if len(username) < 8:
+            raise serializers.ValidationError({"error": "Username must be at least 8 characters in length."})
+
+        # Check if passwords match and meet requirements
+        if len(password) < 8:
+            raise serializers.ValidationError({"error": "Password should contain 8 character at least."})
+        if not password == password_confirm:
+            raise serializers.ValidationError({"error": "Passwords did not match."})
+        if not any(_.isdigit() for _ in password):
+            raise serializers.ValidationError({"error": "The password must contain at least 1 number and letters."})
+        if not any(_.isupper() for _ in password):
+            raise serializers.ValidationError({"error": "There must be at least 1 uppercase letter in the password."})
+        return super().validate(attrs)
 
     def create(self, validated_data):
         password = validated_data.pop("password_confirm")
@@ -161,8 +169,13 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         email = attrs.get("email")
 
-        if not User.objects.filter(email=email).exists():
-            raise serializers.ValidationError({"error": "Bu mail ile user movcud deyil."})
+        try:
+            user = User.objects.get(email=email)
+        except:
+            raise serializers.ValidationError({"error": "There is no user with this e-mail address."})
+
+        if not user.is_active:
+            raise serializers.ValidationError({"error": "This account is not activate."})
 
         return super().validate(attrs)
 
@@ -225,17 +238,20 @@ class ResetPasswordCompleteSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
+        user = self.instance
         new_password = attrs.get("new_password")
         new_password_confirm = attrs.get("new_password_confirm")
 
+        if user.check_password(new_password):
+            raise serializers.ValidationError({"error": "You used this password."})
         if len(new_password) < 8:
-            raise serializers.ValidationError({"error": "Sifrenin uzunlugu 8 den kicik ola bilmez."})
+            raise serializers.ValidationError({"error": "Password should contain 8 character at least."})
         if not new_password == new_password_confirm:
-            raise serializers.ValidationError({"error": "Sifreler arasinda ziddiyet var."})
+            raise serializers.ValidationError({"error": "Passwords did not match."})
         if not any(_.isdigit() for _ in new_password):
-            raise serializers.ValidationError({"error": "Sifrede en az bir reqem olmalidir"})
+            raise serializers.ValidationError({"error": "The password must contain at least 1 number and letters."})
         if not any(_.isupper() for _ in new_password):
-            raise serializers.ValidationError({"error": "Sifrede en az bir boyuk herif olmalidir."})
+            raise serializers.ValidationError({"error": "There must be at least 1 uppercase letter in the password."})
         return super().validate(attrs)
 
     def update(self, instance, validated_data):
@@ -252,5 +268,103 @@ class ResetPasswordCompleteSerializer(serializers.ModelSerializer):
             "access": str(token.access_token)
         }
         return repr_
+
+
+class PasswordChangeSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField(required=True, write_only=True, style={"input_type": "password"})
+    new_password = serializers.CharField(required=True, write_only=True, style={"input_type": "password"})
+    new_password_confirm = serializers.CharField(required=True, write_only=True, style={"input_type": "password"})
+    
+    class Meta:
+        model = User
+        fields = (
+            "old_password",
+            "new_password",
+            "new_password_confirm",
+        )
+    
+    def validate(self, attrs):
+        user = self.instance
+        old_password = attrs.get("old_password")
+        new_password = attrs.get("new_password")
+        new_password_confirm = attrs.get("new_password_confirm")
+
+        if not user.check_password(old_password):
+            raise serializers.ValidationError({"error": "Old password is not correct."})
+        if len(new_password) < 8:
+            raise serializers.ValidationError({"error": "Password should contain 8 character at least."})
+        if not new_password == new_password_confirm:
+            raise serializers.ValidationError({"error": "Passwords did not match."})
+        if not any(_.isdigit() for _ in new_password):
+            raise serializers.ValidationError({"error": "The password must contain at least 1 number and letters."})
+        if not any(_.isupper() for _ in new_password):
+            raise serializers.ValidationError({"error": "There must be at least 1 uppercase letter in the password."})
+        if user.check_password(new_password):
+            raise serializers.ValidationError({"error": "You used this password."})
+
+        return super().validate(attrs)
+
+    def update(self, instance, validated_data):
+        new_password = validated_data.get("new_password")
+        instance.set_password(new_password)
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        repr_ = super().to_representation(instance)
+        token = RefreshToken.for_user(instance)
+        repr_["tokens"] = {
+            "refresh": str(token),
+            "access": str(token.access_token)
+        }
+        return repr_
+
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "logo",
+        )
+
+    def validate(self, attrs):
+        user = self.instance
+        logo = attrs.get("logo")
+        username = attrs.get("username")
+
+        if User.objects.exclude(id=user.id).filter(username__iexact=username).exists():
+            raise serializers.ValidationError({"error": "This username already exists."})
+
+        if logo is not None and logo is not False:
+            photo_path = pathlib.Path(str(logo)).suffix
+            if photo_path not in ['.jpg', '.jpeg', '.png']:
+                raise serializers.ValidationError({"error": "Only images in jpg, jpeg and png format can be uploaded."})
+
+        return super().validate(attrs)
+
+    def to_representation(self, instance):
+        repr_ = super().to_representation(instance)
+        token = RefreshToken.for_user(instance)
+        repr_["tokens"] = {
+            "refresh": str(token), "access": str(token.access_token)
+        }
+        return repr_
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            "logo",
+            "username"
+        )
+        extra_kwargs = {
+            "logo": {"read_only": True},
+            "username": {"read_only": True},
+        }
 
 
