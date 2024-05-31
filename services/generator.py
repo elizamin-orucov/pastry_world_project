@@ -25,3 +25,9 @@ class CodeGenerator:
         qs_exists = model_.objects.filter(activation_code=new_code).exists()
         return cls.create_slug_shortcode(size, model_) if qs_exists else new_code
 
+    @classmethod
+    def create_product_shortcode(cls, size, model_):
+        new_code = cls.code_slug_generator(size=size)
+        qs_exists = model_.objects.filter(code=new_code).exists()
+        return cls.create_product_shortcode(size, model_) if qs_exists else new_code
+
