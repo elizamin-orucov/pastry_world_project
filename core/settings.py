@@ -33,12 +33,15 @@ DJANGO_CORE_APPS = [
 LOCAL_APPS = [
     "accounts",
     "products",
+    "blogs",
 ]
 
 PACKAGE_APPS = [
-    "rest_framework",
-    "ckeditor",
     "mptt",
+    "ckeditor",
+    "django_filters",
+    "rest_framework",
+    "django_cleanup.apps.CleanupConfig",
 ]
 
 INSTALLED_APPS = DJANGO_CORE_APPS + LOCAL_APPS + PACKAGE_APPS

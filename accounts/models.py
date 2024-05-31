@@ -31,6 +31,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "first_name", "last_name"]
 
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
     class Meta:
         ordering = ["-timestamp"]
         verbose_name = "user"

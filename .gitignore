@@ -3,3 +3,4 @@ venv
 manage.py
 db.sqlite3
 media
+delete_migrations.py
