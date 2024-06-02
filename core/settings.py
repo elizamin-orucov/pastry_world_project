@@ -33,6 +33,7 @@ DJANGO_CORE_APPS = [
 LOCAL_APPS = [
     "accounts",
     "products",
+    "contact",
     "blogs",
 ]
 
