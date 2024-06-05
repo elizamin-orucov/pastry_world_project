@@ -32,3 +32,15 @@ class AboutUsAddition(BaseModel):
         verbose_name_plural = "About Us Addition"
 
 
+class ContactUs(DateMixin):
+    full_name = models.CharField(max_length=50)
+    subject = models.CharField(max_length=150)
+    message = models.TextField()
+
+    def __str__(self):
+        return f"{self.subject} - {self.created_at.strftime('%d %B %Y')}"
+
+    class Meta:
+        verbose_name = "message"
+        verbose_name_plural = "Contact us"
+

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import AboutUs, AboutUsAddition
+from ..models import AboutUs, AboutUsAddition, ContactUs
 
 
 class AboutUsAdditionSerializer(serializers.ModelSerializer):
@@ -26,3 +26,12 @@ class AboutUsSerializer(serializers.ModelSerializer):
         repr_["addition"] = AboutUsAdditionSerializer(addition_qs, many=True).data
         return repr_
 
+
+class ContactUsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactUs
+        fields = (
+            "full_name",
+            "subject",
+            "message"
+        )
