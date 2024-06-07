@@ -34,6 +34,7 @@ LOCAL_APPS = [
     "accounts",
     "products",
     "contact",
+    "reviews",
     "blogs",
 ]
 
