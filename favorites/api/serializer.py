@@ -1,11 +1,12 @@
-from rest_framework import serializers
 from ..models import Favorite
+from rest_framework import serializers
 from products.api.serializer import ProductImageSerializer, CategorySerializer
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
     product_id = serializers.SerializerMethodField(read_only=True)
     product_name = serializers.SerializerMethodField(read_only=True)
+    product_slug = serializers.SerializerMethodField(read_only=True)
     product_image = serializers.SerializerMethodField(read_only=True)
     product_category = serializers.SerializerMethodField(read_only=True)
     product_total_price = serializers.SerializerMethodField(read_only=True)
@@ -18,6 +19,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
             "product",
             "product_id",
             "product_name",
+            "product_slug",
             "product_image",
             "product_category",
             "product_total_price",
@@ -32,6 +34,9 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     def get_product_name(self, obj):
         return obj.product.name
+
+    def get_product_slug(self, obj):
+        return obj.product.slug
 
     def get_product_image(self, obj):
         image = obj.product.productimage_set.first()

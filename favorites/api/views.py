@@ -2,15 +2,16 @@ from ..models import Favorite
 from rest_framework import generics
 from .serializer import FavoriteSerializer
 from rest_framework.response import Response
+from services.pagination import CustomPagination
 from rest_framework.permissions import IsAuthenticated
 
 
 class FavoriteView(generics.ListCreateAPIView):
-    # queryset = Favorite.objects.all()
     serializer_class = FavoriteSerializer
     permission_classes = (
         IsAuthenticated,
     )
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return Favorite.objects.filter(user=self.request.user)

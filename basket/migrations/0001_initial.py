@@ -16,19 +16,18 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='ProductReview',
+            name='Basket',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('rating', models.IntegerField(choices=[(1, '★✩✩✩✩'), (2, '★★✩✩✩'), (3, '★★★✩✩'), (4, '★★★★✩'), (5, '★★★★★')])),
-                ('content', models.TextField(blank=True, null=True)),
+                ('quantity', models.PositiveIntegerField(default=1)),
                 ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='products.product')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'verbose_name': 'review',
-                'verbose_name_plural': 'Product reviews',
+                'verbose_name': 'product',
+                'verbose_name_plural': 'Basket',
             },
         ),
     ]
