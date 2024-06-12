@@ -14,6 +14,7 @@ urlpatterns = [
    path("contact/", include("contact.api.urls")),
    path("product/", include("products.api.urls")),
    path("accounts/", include("accounts.api.urls")),
+   path("favorite/", include("favorites.api.urls")),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

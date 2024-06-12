@@ -31,10 +31,12 @@ DJANGO_CORE_APPS = [
 ]
 
 LOCAL_APPS = [
+    "favorites",
     "accounts",
     "products",
     "contact",
     "reviews",
+    "basket",
     "blogs",
 ]
 
