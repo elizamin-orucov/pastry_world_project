@@ -31,6 +31,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class ProductListSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
+    rating = serializers.FloatField()
     total_price = serializers.FloatField()
     image = serializers.SerializerMethodField()
 
@@ -41,6 +42,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "slug",
             "image",
             "category",
+            "rating",
             "price",
             "total_price",
             "discount_interest",

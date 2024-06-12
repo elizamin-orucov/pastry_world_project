@@ -10,7 +10,7 @@ class ProductReview(DateMixin):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey("products.Product", on_delete=models.CASCADE)
     rating = models.IntegerField(choices=RATING)
-    content = models.TextField()
+    content = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.user.email
