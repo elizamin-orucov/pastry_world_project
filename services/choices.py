@@ -1,11 +1,10 @@
-from datetime import datetime
-
-now_date = int(datetime.now().strftime("%Y")) + 1
-
-
-def year_choice():
-    return ((year, year) for year in range(2011, now_date))
-
+ORDER_STATUS_CHOICES = (
+    ("Order Received", "Order Received"),
+    ("On Going", "On Going"),
+    ("Completed", "Completed"),
+    ("Cancelled", "Cancelled"),
+    ("Delivered", "Delivered")
+)
 
 RATING = (
     (1, "★✩✩✩✩"),
@@ -35,4 +34,5 @@ PRODUCT_STATUS_CHOICES = (
     ("In stock", "In stock"),
     ("Will available", "Will available")
 )
+
 

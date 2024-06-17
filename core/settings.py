@@ -38,6 +38,7 @@ LOCAL_APPS = [
     "reviews",
     "basket",
     "blogs",
+    "order",
 ]
 
 PACKAGE_APPS = [
